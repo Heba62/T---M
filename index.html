@@ -67,7 +67,7 @@ h2{font-size:30px;font-weight:700;line-height:1.3}
 .cal{border:1px solid var(--line);margin:18px auto 0;max-width:310px;padding:26px 20px}
 .cal table{width:100%;border-collapse:collapse;margin:14px 0 18px;font-size:15px}
 .cal td{padding:6px 0}
-.cal td.on{border:1px solid var(--ink);border-radius:50%;font-weight:700}
+.cal td.on{position:relative;isolation:isolate;color:var(--cream);font-weight:700;line-height:1.5}.cal td.on::before{content:"";position:absolute;left:50%;top:50%;width:38px;height:38px;margin:-15px 0 0 -19px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%237a1f30' d='M12 21.2 3.4 12.6C1 10.2 1 6.4 3.4 4.2c2.2-2 5.4-1.7 7.4.5l1.2 1.3 1.2-1.3c2-2.2 5.2-2.5 7.4-.5 2.4 2.2 2.4 6 0 8.4z'/%3E%3C/svg%3E") center/contain no-repeat;z-index:-1}
 .cal .say{font-size:20px}
 .cd{display:flex;gap:10px;justify-content:center;margin-top:26px}
 .cd div{flex:1;max-width:76px;background:var(--green);color:#fff;border-radius:12px;padding:8px 0}
@@ -273,6 +273,36 @@ html.js:not(.rev) .cap::before{opacity:0}
 .pc{flex:none;max-width:none;width:46px}
 .pc span{width:46px;height:46px}
 .pc:nth-child(even){margin-top:12px}
+
+/* music button */
+.mu{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:70;width:48px;height:48px;border:0;padding:0;border-radius:50%;background:var(--green);color:var(--cream);cursor:pointer;display:grid;place-items:center;box-shadow:0 0 0 3px var(--cream),0 0 0 4px rgba(47,58,40,.55),0 8px 20px rgba(47,58,40,.3);opacity:0;transform:scale(.6);pointer-events:none;transition:opacity 1s ease,transform 1s cubic-bezier(.2,.7,.2,1),box-shadow .3s;-webkit-tap-highlight-color:transparent}
+html.go .mu{opacity:1;transform:scale(1);pointer-events:auto;transition-delay:4.2s,4.2s,0s}
+.mu::before{content:"";position:absolute;inset:4px;border-radius:50%;border:1px dashed rgba(246,243,234,.7);animation:muspin 14s linear infinite;animation-play-state:paused}
+.mu.on::before{animation-play-state:running}
+.mu svg{position:relative;width:22px;height:22px}
+.mu .sl2{stroke:var(--cream);stroke-width:2;stroke-linecap:round;stroke-dasharray:30;stroke-dashoffset:0;transition:stroke-dashoffset .35s ease}
+.mu.on .sl2{stroke-dashoffset:30}
+.mu .nt{transition:opacity .3s,transform .3s;transform-origin:50% 50%}
+.mu:not(.on) .nt{opacity:.55}
+.mu.on .nt{animation:munote 1.6s ease-in-out infinite}
+.mu:active{transform:scale(.92)}
+.mu:focus-visible{outline:2px solid var(--green);outline-offset:5px}
+@keyframes muspin{to{transform:rotate(360deg)}}
+@keyframes munote{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-1.5px) rotate(-6deg)}}
+@media (prefers-reduced-motion:reduce){.mu::before,.mu.on .nt{animation:none}}
+
+/* add to calendar + countdown message */
+.addcal{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:9px 22px;border:1px solid var(--green);border-radius:30px;background:transparent;color:var(--green);font-family:inherit;font-size:16px;line-height:1.6;cursor:pointer;transition:background .25s,color .25s;-webkit-tap-highlight-color:transparent}
+.addcal:hover,.addcal:active{background:var(--green);color:var(--cream)}
+.addcal svg{width:18px;height:18px}
+.cd[hidden],.cdmsg[hidden]{display:none}
+.cdmsg{margin:26px auto 0;max-width:310px;background:var(--green);color:var(--cream);border-radius:70px 70px 18px 18px;padding:34px 24px 28px;box-shadow:inset 0 0 0 6px var(--green),inset 0 0 0 7px rgba(246,243,234,.4),0 10px 26px rgba(47,58,40,.22);animation:cdin 1.4s cubic-bezier(.2,.7,.2,1) both}
+.cdmsg b{display:block;font-size:32px;line-height:1.4}
+.cdmsg span{display:block;font-size:18px;margin-top:4px;opacity:.92}
+.cdmsg i{display:block;font-style:normal;font-size:24px;margin-top:10px;animation:cdbeat 1.6s ease-in-out infinite}
+@keyframes cdin{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes cdbeat{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
+@media (prefers-reduced-motion:reduce){.cdmsg,.cdmsg i{animation:none}}
 </style>
 </head>
 <body>
@@ -339,13 +369,14 @@ html.js:not(.rev) .cap::before{opacity:0}
   <div class="cal"><svg class="cc a" viewBox="0 0 120 100" aria-hidden="true"><use href="#gcl"/></svg><svg class="cc b" viewBox="0 0 120 100" aria-hidden="true"><use href="#gcl"/></svg>
     <h2 class="lat script">December</h2>
     <table id="cal"></table>
-    <div class="say">موعد الحفل · الخميس <span class="lat">PM 7:00</span></div>
+    <div class="say"> الخميس  ·   <span class="lat">PM 7:00</span></div><br><button id="addcal" class="addcal" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17M12 18.2l-3-2.9a1.8 1.8 0 0 1 2.6-2.4l.4.4.4-.4a1.8 1.8 0 0 1 2.6 2.4z"/></svg>أضف للتقويم</button>
   </div>
   <h3 class="lat" style="margin-top:28px;letter-spacing:.2em;font-size:18px">COUNTDOWN</h3>
-  <div class="cd">
+  <div class="cd" id="cdbox">
     <div><b id="d">00</b><small>أيام</small></div><div><b id="h">00</b><small>ساعات</small></div>
     <div><b id="m">00</b><small>دقائق</small></div><div><b id="s">00</b><small>ثواني</small></div>
   </div>
+  <div class="cdmsg" id="cdmsg" hidden><b>اليوم يومنا</b><span>حان الموعد، وننتظركم بكل حب</span><i>❤</i></div>
 </section>
 
 <div class="fd"><svg class="gs" viewBox="0 0 480 90" aria-hidden="true"><use href="#gst"/></svg></div>
@@ -387,9 +418,9 @@ var t=document.getElementById('cal'),f=(new Date(2026,11,1).getDay()+1)%7,h='<tr
 for(i=0;i<f;i++){h+='<td></td>';c++}
 for(i=1;i<=31;i++){h+='<td'+(i===17?' class="on"':'')+'>'+i+'</td>';c++;if(c%7==0&&i<31)h+='</tr><tr>'}
 t.innerHTML=h+'</tr>';
-var T=new Date("December 17, 2026 00:00:00").getTime();
+var T=Date.UTC(2026,11,17,15,0,0);
 function p(n){return n<10?"0"+n:n}
-function tick(){var x=Math.max(0,T-Date.now());
+function tick(){var x=Math.max(0,T-Date.now());var dn=x===0||location.hash==="#done";document.getElementById("cdbox").hidden=dn;document.getElementById("cdmsg").hidden=!dn;
 document.getElementById("d").textContent=p(Math.floor(x/864e5));
 document.getElementById("h").textContent=p(Math.floor(x%864e5/36e5));
 document.getElementById("m").textContent=p(Math.floor(x%36e5/6e4));
@@ -406,6 +437,62 @@ for(var j=0;j<els.length;j++)io.observe(els[j]);})();
 (function(){var g=document.getElementById('gate'),b=document.getElementById('seal');if(!g||!b)return;
 b.addEventListener('click',function(){window.scrollTo(0,0);g.classList.add('open');document.documentElement.classList.add('go');setTimeout(function(){document.documentElement.classList.add('rev')},window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches?0:4500);
 setTimeout(function(){document.documentElement.classList.remove('lock');g.classList.add('done')},3800);setTimeout(function(){if(g.parentNode)g.parentNode.removeChild(g)},8200)});})();
+</script>
+<script>
+(function(){
+var b=document.getElementById('addcal');if(!b)return;
+b.addEventListener('click',function(){
+  var L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Wedding Invitation//AR','CALSCALE:GREGORIAN','METHOD:PUBLISH',
+  'BEGIN:VEVENT','UID:tariq-mariam-20261217@wedding-invitation','DTSTAMP:20260101T000000Z',
+  'DTSTART:20261217T150000Z','DTEND:20261217T200000Z',
+  'SUMMARY:حفل زفاف طارق ومريم','LOCATION:Hatta Haven\\, دبي\\, الإمارات',
+  'DESCRIPTION:يسعدنا حضوركم. https://www.google.com/maps/search/?api=1&query=Hatta+Haven',
+  'BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY','DESCRIPTION:غداً حفل زفاف طارق ومريم','END:VALARM',
+  'BEGIN:VALARM','TRIGGER:-PT3H','ACTION:DISPLAY','DESCRIPTION:حفل زفاف طارق ومريم بعد ثلاث ساعات','END:VALARM',
+  'END:VEVENT','END:VCALENDAR'];
+  var txt=L.join('\r\n')+'\r\n';
+  try{
+    var blob=new Blob([txt],{type:'text/calendar;charset=utf-8'}),u=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=u;a.download='wedding-invitation.ics';document.body.appendChild(a);a.click();
+    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(u)},1500);
+  }catch(e){window.location.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(txt)}
+});
+})();
+</script>
+<audio id="bgm" src="music.mp3" loop preload="auto"></audio>
+<button id="mu" class="mu" type="button" aria-label="تشغيل / إيقاف الموسيقى" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><g class="nt"><path d="M9 18V6l10-2v12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="currentColor"/><circle cx="16.5" cy="16" r="2.5" fill="currentColor"/></g><line class="sl2" x1="4" y1="3.5" x2="20" y2="20.5"/></svg></button>
+<script>
+(function(){
+var a=document.getElementById('bgm'),m=document.getElementById('mu'),seal=document.getElementById('seal');
+if(!a||!m)return;
+function ui(on){m.classList.toggle('on',on);m.setAttribute('aria-pressed',on?'true':'false')}
+function play(){var r=a.play();if(r&&r.then)r.then(function(){ui(true)},function(){ui(false)});else ui(true)}
+a.addEventListener('pause',function(){ui(false)});
+a.addEventListener('play',function(){ui(true)});
+m.addEventListener('click',function(){if(a.paused)play();else a.pause()});
+/* auto scroll */
+var going=false,y=0,last=0,SPEED=38;
+var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+function stop(){going=false}
+function step(t){
+  if(!going)return;
+  var dt=Math.min(60,t-last)/1000;last=t;
+  y+=SPEED*dt;
+  var max=document.documentElement.scrollHeight-window.innerHeight;
+  if(y>=max){window.scrollTo({top:max,behavior:'instant'});going=false;return}
+  window.scrollTo({top:y,behavior:'instant'});
+  requestAnimationFrame(step);
+}
+function start(){
+  if(going||reduce)return;
+  y=window.pageYOffset||0;going=true;last=performance.now();requestAnimationFrame(step);
+}
+['wheel','touchstart','mousedown','keydown'].forEach(function(e){window.addEventListener(e,stop,{passive:true})});
+if(seal){seal.addEventListener('click',function(){
+  play();
+  setTimeout(start,5200);
+})}else{play();setTimeout(start,1500)}
+})();
 </script>
 <div id="sky" aria-hidden="true"><div class="fb" style="top:7%;--w:22px;--dur:34s;--dl:-6s;--dir:crossR;--bob:5s;--fl:.5s;--o:.6"><div class="bb"><svg viewBox="0 0 40 20"><use href="#bd"/></svg></div></div><div class="fb" style="top:16%;--w:34px;--dur:26s;--dl:-18s;--dir:crossL;--bob:6s;--fl:.42s;--o:.75"><div class="bb"><svg viewBox="0 0 40 20"><use href="#bd"/></svg></div></div><div class="fb" style="top:26%;--w:26px;--dur:38s;--dl:-22s;--dir:crossR;--bob:4.5s;--fl:.48s;--o:.65"><div class="bb"><svg viewBox="0 0 40 20"><use href="#bd"/></svg></div></div><div class="fb" style="top:38%;--w:40px;--dur:30s;--dl:-10s;--dir:crossL;--bob:5.5s;--fl:.4s;--o:.8"><div class="bb"><svg viewBox="0 0 40 20"><use href="#bd"/></svg></div></div><div class="fb" style="top:50%;--w:24px;--dur:40s;--dl:-30s;--dir:crossR;--bob:6s;--fl:.5s;--o:.6"><div class="bb"><svg viewBox="0 0 40 20"><use href="#bd"/></svg></div></div><div class="fb" style="top:62%;--w:32px;--dur:28s;--dl:-4s;--dir:crossL;--bob:4s;--fl:.44s;--o:.72"><div class="bb"><svg viewBox="0 0 40 20"><use href="#bd"/></svg></div></div><div class="fb" style="top:74%;--w:20px;--dur:36s;--dl:-26s;--dir:crossR;--bob:5s;--fl:.52s;--o:.55"><div class="bb"><svg viewBox="0 0 40 20"><use href="#bd"/></svg></div></div><div class="fb" style="top:86%;--w:28px;--dur:32s;--dl:-14s;--dir:crossL;--bob:6.5s;--fl:.46s;--o:.65"><div class="bb"><svg viewBox="0 0 40 20"><use href="#bd"/></svg></div></div></div>
 </body>
